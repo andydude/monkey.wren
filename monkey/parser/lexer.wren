@@ -154,7 +154,7 @@ class Lexer {
 		return res
 	}
 
-  isLetter(char) {
+	isLetter(char) {
 		if (char is Num) {
 			System.print("isN")
 			return true
@@ -164,37 +164,37 @@ class Lexer {
 			Fiber.abort("isLetter expected String")
 		}
 		var ch = char.codePoints[0]
-    return "a".codePoints[0] <= ch && ch <= "z".codePoints[0] || "A".codePoints[0] <= ch && ch <= "Z".codePoints[0] || ch == "_".codePoints[0]
-  }
-  
-  isDigit(char) {
-		var ch = char.codePoints[0]
-  	return "0".codePoints[0] <= ch && ch <= "9".codePoints[0]
-  }
-
-  lookupIdent(ident) {
-    var keywords = {
-    	"fn":     TokenKind["FUNCTION"],
-    	"let":    TokenKind["LET"],
-    	"true":   TokenKind["TRUE"],
-    	"false":  TokenKind["FALSE"],
-    	"if":     TokenKind["IF"],
-    	"else":   TokenKind["ELSE"],
-    	"return": TokenKind["RETURN"],
-    }
-		
-    if (keywords.containsKey(ident)) {
-  		return keywords[ident]
-  	}
-		
-  	return TokenKind["IDENT"]
-  }
+		return "a".codePoints[0] <= ch && ch <= "z".codePoints[0] || "A".codePoints[0] <= ch && ch <= "Z".codePoints[0] || ch == "_".codePoints[0]
+	}
 	
-  stringSlice(s, first, past) {
+	isDigit(char) {
+		var ch = char.codePoints[0]
+		return "0".codePoints[0] <= ch && ch <= "9".codePoints[0]
+	}
+
+	lookupIdent(ident) {
+		var keywords = {
+			"fn":     TokenKind["FUNCTION"],
+			"let":    TokenKind["LET"],
+			"true":   TokenKind["TRUE"],
+			"false":  TokenKind["FALSE"],
+			"if":     TokenKind["IF"],
+			"else":   TokenKind["ELSE"],
+			"return": TokenKind["RETURN"],
+		}
+		
+		if (keywords.containsKey(ident)) {
+			return keywords[ident]
+		}
+		
+		return TokenKind["IDENT"]
+	}
+	
+	stringSlice(s, first, past) {
 		var rs = ""
 		for (i in first...past) {
 			rs = rs + s[i]
 		}
 		return rs
-  }
+	}
 }
