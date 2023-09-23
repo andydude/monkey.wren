@@ -1,2 +1,3 @@
 # monkey.wren
-Implementation of Monkey in Wren
+
+Implementation of Monkey (From Writing an interpreter in Go) in Wren

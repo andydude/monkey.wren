@@ -1,15 +1,12 @@
-import "./token" for Token, TokenKind
+import "./token" for Token, Tok
+
+var EOFChar = "\0"
 
 class Lexer {
 	input { _input }
+	
 	pos { _pos }
-	pos=(pos) {
-		_pos = pos
-	}
 	readPos { _readPos }
-	readPos=(readPos) {
-		_readPos = readPos
-	}
 
 	char { _char }
 	char=(char) {
@@ -17,7 +14,7 @@ class Lexer {
 	}
 
 	construct new(input) {
-		_pos = 0
+		_pos = -1
 		_readPos = 0
 		_input = input
 		readChar()
@@ -33,66 +30,66 @@ class Lexer {
 				var ch = _char
 				readChar()
 				var lit = ch + _char
-				tok = Token.new(TokenKind["EQ_EQ"], lit)
+				tok = Token.new(Tok["EQ_EQ"], lit)
 			} else {
-				tok = Token.new(TokenKind["EQ"], _char)
+				tok = Token.new(Tok["EQ"], _char)
 			}
 		} else if (_char == "+") {
-			tok = Token.new(TokenKind["PLUS"], _char)
+			tok = Token.new(Tok["PLUS"], _char)
 		} else if (_char == "-") {
-			tok = Token.new(TokenKind["MINUS"], _char)
+			tok = Token.new(Tok["MINUS"], _char)
 		} else if (_char == "!") {
 			if (peekChar() == "=") {
 				var ch = _char
 				readChar()
 				var lit = ch + _char
-				tok = Token.new(TokenKind["BANG_EQ"], lit)
+				tok = Token.new(Tok["BANG_EQ"], lit)
 			} else {
-				tok = Token.new(TokenKind["BANG"], _char)
+				tok = Token.new(Tok["BANG"], _char)
 			}
 		} else if (_char == "/") {
-			tok = Token.new(TokenKind["SOL"], _char)
+			tok = Token.new(Tok["SOL"], _char)
 		} else if (_char == "*") {
-			tok = Token.new(TokenKind["STAR"], _char)
+			tok = Token.new(Tok["STAR"], _char)
 		} else if (_char == "<") {
-			tok = Token.new(TokenKind["LT"], _char)
+			tok = Token.new(Tok["LT"], _char)
 		} else if (_char == ">") {
-			tok = Token.new(TokenKind["GT"], _char)
+			tok = Token.new(Tok["GT"], _char)
 		} else if (_char == ";") {
-			tok = Token.new(TokenKind["SEMICOLON"], _char)
+			tok = Token.new(Tok["SEMICOLON"], _char)
 		} else if (_char == ":") {
-			tok = Token.new(TokenKind["COLON"], _char)
+			tok = Token.new(Tok["COLON"], _char)
 		} else if (_char == ",") {
-			tok = Token.new(TokenKind["COMMA"], _char)
+			tok = Token.new(Tok["COMMA"], _char)
 		} else if (_char == "(") {
-			tok = Token.new(TokenKind["LPAREN"], _char)
+			tok = Token.new(Tok["LPAREN"], _char)
 		} else if (_char == ")") {
-			tok = Token.new(TokenKind["RPAREN"], _char)
+			tok = Token.new(Tok["RPAREN"], _char)
 		} else if (_char == "{") {
-			tok = Token.new(TokenKind["LBRACE"], _char)
+			tok = Token.new(Tok["LBRACE"], _char)
 		} else if (_char == "}") {
-			tok = Token.new(TokenKind["RBRACE"], _char)
+			tok = Token.new(Tok["RBRACE"], _char)
 		} else if (_char == "[") {
-			tok = Token.new(TokenKind["LBRACK"], _char)
+			tok = Token.new(Tok["LBRACK"], _char)
 		} else if (_char == "]") {
-			tok = Token.new(TokenKind["RBRACK"], _char)
+			tok = Token.new(Tok["RBRACK"], _char)
 		} else if (_char == "\"") {
 			var lit = readString()
-			tok = Token.new(TokenKind["STRING_LIT"], lit)
-		} else if (_char == "\0") {
-			tok = Token.new(TokenKind["EOF"], "")
+			tok = Token.new(Tok["STRING_LIT"], lit)
+		} else if (_char == EOFChar) {
+			tok = Token.new(Tok["EOF"], "")
 		} else {
-			if (isLetter(_char)) {
+			if (isAlpha(_char)) {
 				var lit = readIdentifier()
 				var kind = lookupIdent(lit)
 				tok = Token.new(kind, lit)
 				return tok
 			} else if (isDigit(_char)) {
 				var lit = readNumber()
-				tok = Token.new(TokenKind["INTEGER_LIT"], lit)
+				tok = Token.new(Tok["INTEGER_LIT"], lit)
 				return tok
 			} else {
-				tok = Token.new(TokenKind["EOF"], "illegal")
+				tok = Token.new(Tok["EOF"], "illegal")
 			}
 		}
 		readChar()
@@ -107,7 +104,7 @@ class Lexer {
 	
 	readChar() {
 		if (_readPos != null && _readPos >= _input.count) {
-			_char = "\0"
+			_char = EOFChar
 		} else {
 			_char = _input[_readPos]
 		}
@@ -117,7 +114,7 @@ class Lexer {
 	
 	peekChar() {
 		if (_readPos >= _input.count) {
-			return 0
+			return EOFChar
 		} else {
 			return _input[_readPos]
 		}
@@ -125,11 +122,10 @@ class Lexer {
 	
 	readIdentifier() {
 		var pos = _pos
-		//System.print("RI" +_char)
-		while (isLetter(_char)) {
+		while (isAlpha(_char)) {
 			readChar()
 		}
-		var res = stringSlice(_input, pos, _pos)
+		var res = _input[pos..._pos]
 		return res
 	}
 	
@@ -138,7 +134,7 @@ class Lexer {
 		while (isDigit(_char)) {
 			readChar()
 		}
-		var res = stringSlice(_input, pos, _pos)
+		var res = _input[pos..._pos]
 		return res
 	}
 	
@@ -150,51 +146,46 @@ class Lexer {
 				break
 			}
 		}
-		var res = stringSlice(_input, pos, _pos)
+		var res = _input[pos..._pos]
 		return res
 	}
 
-	isLetter(char) {
-		if (char is Num) {
-			System.print("isN")
-			return true
-		}
+	isAlpha(char) {
 		if (char is String == false) {
-			System.print("isL")
-			Fiber.abort("isLetter expected String")
+			Fiber.abort("isAlpha expected String")
 		}
 		var ch = char.codePoints[0]
-		return "a".codePoints[0] <= ch && ch <= "z".codePoints[0] || "A".codePoints[0] <= ch && ch <= "Z".codePoints[0] || ch == "_".codePoints[0]
+		return ("a".codePoints[0] <= ch &&
+			ch <= "z".codePoints[0] ||
+			"A".codePoints[0] <= ch &&
+			ch <= "Z".codePoints[0] ||
+			ch == "_".codePoints[0])
 	}
 	
 	isDigit(char) {
+		if (char is String == false) {
+			Fiber.abort("isDigit expected String")
+		}
 		var ch = char.codePoints[0]
-		return "0".codePoints[0] <= ch && ch <= "9".codePoints[0]
+		return ("0".codePoints[0] <= ch &&
+			ch <= "9".codePoints[0])
 	}
 
 	lookupIdent(ident) {
 		var keywords = {
-			"fn":     TokenKind["FUNCTION"],
-			"let":    TokenKind["LET"],
-			"true":   TokenKind["TRUE"],
-			"false":  TokenKind["FALSE"],
-			"if":     TokenKind["IF"],
-			"else":   TokenKind["ELSE"],
-			"return": TokenKind["RETURN"],
+			"fn":     Tok["FUNCTION"],
+			"let":    Tok["LET"],
+			"true":   Tok["TRUE"],
+			"false":  Tok["FALSE"],
+			"if":     Tok["IF"],
+			"else":   Tok["ELSE"],
+			"return": Tok["RETURN"],
 		}
 		
 		if (keywords.containsKey(ident)) {
 			return keywords[ident]
 		}
 		
-		return TokenKind["IDENT"]
-	}
-	
-	stringSlice(s, first, past) {
-		var rs = ""
-		for (i in first...past) {
-			rs = rs + s[i]
-		}
-		return rs
+		return Tok["IDENT"]
 	}
 }
